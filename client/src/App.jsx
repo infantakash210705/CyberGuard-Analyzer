@@ -40,7 +40,7 @@ function App() {
     setError(null);
     try {
        if (mode === 'URL') {
-           const res = await fetch('http://localhost:5000/api/scan-url', {
+           const res = await fetch('https://cyberguard-backend-dg6d.onrender.com/api/scan-url', {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify({ url: inputVar })
@@ -51,7 +51,7 @@ function App() {
        } else {
            const formData = new FormData();
            formData.append('file', inputVar);
-           const res = await fetch('http://localhost:5000/api/scan-file', {
+           const res = await fetch('https://cyberguard-backend-dg6d.onrender.com/api/scan-file', {
                method: 'POST',
                body: formData
            });
