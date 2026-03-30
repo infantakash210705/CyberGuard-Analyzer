@@ -14,13 +14,8 @@ router.post('/scan-url', async (req, res) => {
     try {
         const result = await calculateUrlRisk(url);
         
-        db.run(`INSERT INTO Results (target, type, verdict, score, reasons, screenshot) VALUES (?, ?, ?, ?, ?, ?)`, 
-            [url, 'URL', result.verdict, result.score, JSON.stringify(result.reasons), result.screenshot], 
-            function(err) {
-                if (err) return res.status(500).json({ error: err.message });
-                res.json({ id: this.lastID, ...result, details: url });
-            }
-        );
+        const info = db.prepare(`INSERT INTO Results (target, type, verdict, score, reasons, screenshot) VALUES (?, ?, ?, ?, ?, ?)`).run(url, 'URL', result.verdict, result.score, JSON.stringify(result.reasons), result.screenshot);
+        res.json({ id: info.lastInsertRowid, ...result, details: url });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -35,27 +30,24 @@ router.post('/scan-file', upload.single('file'), async (req, res) => {
         // Clean up uploaded file if needed
         fs.unlink(req.file.path, () => {});
         
-        db.run(`INSERT INTO Results (target, type, verdict, score, reasons, screenshot) VALUES (?, ?, ?, ?, ?, ?)`, 
-            [req.file.originalname, 'FILE', result.verdict, result.score, JSON.stringify(result.reasons), null], 
-            function(err) {
-                if (err) return res.status(500).json({ error: err.message });
-                res.json({ id: this.lastID, ...result, details: req.file.originalname });
-            }
-        );
+        const info = db.prepare(`INSERT INTO Results (target, type, verdict, score, reasons, screenshot) VALUES (?, ?, ?, ?, ?, ?)`).run(req.file.originalname, 'FILE', result.verdict, result.score, JSON.stringify(result.reasons), null);
+        res.json({ id: info.lastInsertRowid, ...result, details: req.file.originalname });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
 router.get('/result/:id', (req, res) => {
-    db.get('SELECT * FROM Results WHERE id = ?', [req.params.id], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const row = db.prepare('SELECT * FROM Results WHERE id = ?').get(req.params.id);
         if (!row) return res.status(404).json({ error: 'Result not found' });
         
         row.reasons = JSON.parse(row.reasons || '[]');
         row.details = row.target;
         res.json(row);
-    });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 module.exports = router;
