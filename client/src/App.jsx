@@ -40,7 +40,7 @@ function App() {
     setError(null);
     try {
        if (mode === 'URL') {
-           const res = await fetch('https://cyberguard-analyzer.onrender.com//api/scan-url', {
+           const res = await fetch('https://cyberguard-analyzer.onrender.com/api/scan-url', {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify({ url: inputVar })
