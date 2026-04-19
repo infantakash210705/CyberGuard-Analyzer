@@ -51,7 +51,7 @@ function App() {
        } else {
            const formData = new FormData();
            formData.append('file', inputVar);
-           const res = await fetch('https://cyberguard-analyzer.onrender.com//api/scan-file', {
+           const res = await fetch('https://cyberguard-analyzer.onrender.com/api/scan-file', {
                method: 'POST',
                body: formData
            });
